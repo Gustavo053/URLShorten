@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import spring from '../../api/spring';
-// import axios from 'axios';
+import api from '../../api/api';
+import bitly from '../../api/bitly';
 
-import Header from '../header/Header';
+import Header from '../Header/Header';
 import './Shortener.css';
 
 function Shortener() {
@@ -22,9 +22,25 @@ function Shortener() {
             history.push('/register');
         } else {
             try {
-                const response = await spring.post('/', { userId: auth, urlOriginal: url, urlGenerated: url, date: Date.now() })
-                if (response.status === 200) {
-                    setUrlShort(response.data.urlGenerated);
+                const responseBitly = await bitly(url);
+
+                //verifica se a URL é válida
+                if (responseBitly.status_code !== 200) {
+                    alert('Por favor, insira uma URL válida');
+                    return;
+                }
+
+                const responseUser = await api.get(`/user/get/${auth}`);
+
+                const responseUrl = await api.post('/', {
+                    userId: auth,
+                    userLogin: responseUser.data.login,
+                    urlOriginal: url,
+                    urlGenerated: responseBitly.data.url,
+                    date: Date.now()
+                })
+                if (responseUrl.status === 200) {
+                    setUrlShort(responseUrl.data.urlGenerated);
                 }
             } catch (err) {
                 localStorage.removeItem('auth');

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import spring from '../../api/spring';
+import api from '../../api/api';
 
-import Header from '../header/Header';
+import Header from '../Header/Header';
 import './Login.css';
 
 function Login() {
@@ -15,7 +15,7 @@ function Login() {
         event.preventDefault();
 
         try {
-            const response = await spring.post('/login', { login: login, password: password });
+            const response = await api.post('/login', { login: login, password: password });
             if (response.status === 200) {
                 const userId = response.data.id;
                 localStorage.setItem('auth', userId);

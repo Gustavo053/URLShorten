@@ -8,13 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/user")
 @CrossOrigin(origins = "http://localhost:3000", exposedHeaders = "X-Total-Count")
-public class UserUrl {
+public class Link {
     private UserService userService;
     private UrlService urlService;
 
@@ -28,27 +27,19 @@ public class UserUrl {
         this.urlService = urlService;
     }
 
-    @PostMapping
-    public ResponseEntity<Url> create(@RequestBody Url url) {
-        //verifica se o usuário é válido no banco de dados
-        if (userService.getById(url.getUserId()) != null) {
-            User user = userService.getById(url.getUserId());
-            List<Url> urls;
+    @GetMapping(path = "/get/{userId}")
+    public ResponseEntity<User> findAll(@PathVariable String userId) {
+        if (userService.getById(userId) != null) {
+            return ResponseEntity.ok(userService.getById(userId));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
-            //se o usuário não tiver links, é criado uma nova lista para seus links
-            if (user.getUrls() == null) {
-                urls = new ArrayList<>();
-            } else {
-                urls = user.getUrls();
-            }
-
-            urls.add(url);
-            user.setUrls(urls);
-
-            urlService.createAndUpdate(url);
-            userService.createAndUpdate(user);
-
-            return ResponseEntity.ok(url);
+    @GetMapping(path = "/{userId}")
+    public ResponseEntity<List<Url>> getById(@PathVariable String userId) {
+        if (userService.getById(userId) != null) {
+            return ResponseEntity.ok(urlService .findAllByUserId(userId));
         } else {
             return ResponseEntity.notFound().build();
         }
